@@ -17,11 +17,14 @@
 `define JumpEnable      1'b1
 
 // hold
+`define HoldEnable      1'b1
+`define HoldDisable     1'b0
+
 `define HoldFlagBus     2:0
-`define Hold_None       3'b000
-`define Hold_PC         3'b001
-`define Hold_IF         3'b010
-`define Hold_ID         3'b100
+`define Hold_None       1'b0
+`define Hold_PC         1'b1
+`define Hold_IF         1'b1
+`define Hold_ID         1'b1
 
 // regs
 `define RegsAddrBus     4:0
