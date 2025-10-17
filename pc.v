@@ -10,29 +10,27 @@ module pc (
     input wire                  i_Clk,
     input wire                  i_reset,
     
-    // jump flag
-    input wire                  i_jump_flag,
-    input wire[`InstAddrBus]    i_jump_addr,
-    
-    // hold flag
-    input wire[`HoldFlagBus]    i_hold_flag,
+    // from ex
+    input wire                  i_hold_flag,    // hold flag
+    input wire                  i_jump_flag,    // jump flag
+    input wire[`InstAddrBus]    i_jump_addr,    // jump addr
 
-    // output pc counter
-    output reg[`InstAddrBus]    o_pc
+    // to inst_rom and if_id
+    output reg[`InstAddrBus]    o_pc_addr       // pc counter 
 );
     
     always @(posedge i_Clk) begin
         if (i_reset == `ResetEnable) begin
-            o_pc <= 32'h0; 
+            o_pc_addr <= 32'h0; 
         end
         else if (i_jump_flag == `JumpEnable) begin
-            o_pc <= i_jump_addr;
+            o_pc_addr <= i_jump_addr;
         end
         else if (i_hold_flag == `Hold_PC) begin
-            o_pc <= o_pc;
+            o_pc_addr <= o_pc_addr;
         end
         else begin
-            o_pc <= o_pc + 32'h4;
+            o_pc_addr <= o_pc_addr + 32'h4;
         end
     end
 

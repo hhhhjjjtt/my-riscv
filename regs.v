@@ -1,4 +1,4 @@
-/*  rom
+/*  regs
 - 32 registers, each with 32 bits
 */
 
@@ -9,17 +9,17 @@ module regs (
     input wire                  i_reset,
     
     // from ex
-    input wire                  i_we,
-    input wire[`RegsAddrBus]    i_w_addr,
-    input wire[`RegsDataBus]    i_w_data,
+    input wire                  i_we,           // write enable
+    input wire[`RegsAddrBus]    i_w_addr,       // write addr 1
+    input wire[`RegsDataBus]    i_w_data,       // write data
 
     // from id
-    input wire[`RegsAddrBus]    i_r_addr1, 
-    input wire[`RegsAddrBus]    i_r_addr2,
+    input wire[`RegsAddrBus]    i_r_addr1,      // read addr 1
+    input wire[`RegsAddrBus]    i_r_addr2,      // read addr 2
 
     // to id 
-    output reg[`RegsDataBus]    o_r_data1,
-    output reg[`RegsDataBus]    o_r_data2,
+    output reg[`RegsDataBus]    o_r_data1,      // read data 1
+    output reg[`RegsDataBus]    o_r_data2,      // read data 2
 );
     reg[`RegsDataBus] regs[0:`RegsNum - 1];
 

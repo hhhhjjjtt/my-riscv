@@ -4,27 +4,27 @@ module if_id (
     input wire                  i_Clk,
     input wire                  i_reset,
 
-    input wire[`InstDataBus]    i_inst_data,    // instruction
-    input wire[`InstAddrBus]    i_inst_addr,    // pc addr
+    input wire[`InstAddrBus]    i_pc_addr,      // input pc addr
+    input wire[`InstDataBus]    i_inst_data,    // input instruction data
 
-    input wire                  i_hold_flag,
+    input wire                  i_hold_flag,    // hold flag from ex
 
-    output wire[`InstDataBus]   o_inst_data,
-    output wire[`InstAddrBus]   o_inst_addr
+    output wire[`InstAddrBus]   o_pc_addr       // output pc addr
+    output wire[`InstDataBus]   o_inst_data,    // output instruction data
 );
     
     always @(posedge i_Clk) begin
         if (i_reset == `ResetEnable) begin
             o_inst_data <= `ZeroWord;
-            o_inst_addr <= `ZeroWord;
+            o_pc_addr <= `ZeroWord;
         end
         else if (i_hold_flag == `Hold_IF) begin
             o_inst_data <= `ZeroWord;
-            o_inst_addr <= `ZeroWord;
+            o_pc_addr <= `ZeroWord;
         end
         else begin
             o_inst_data <= i_inst_data;
-            o_inst_addr <= i_inst_addr;
+            o_pc_addr <= i_pc_addr;
         end
     end
 
