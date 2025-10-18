@@ -35,8 +35,8 @@
 `define ZeroWord        32'b0
 
 // inst_rom
-`define ROMAddrBus      InstAddrBus
-`define ROMDataBus      InstDataBus
+`define ROMAddrBus      31:0
+`define ROMDataBus      31:0
 `define ROMNum          4096
 
 // data_ram

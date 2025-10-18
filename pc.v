@@ -18,20 +18,25 @@ module pc (
     // to inst_rom and if_id
     output reg[`InstAddrBus]    o_pc_addr       // pc counter 
 );
-    
+
+    reg[`InstAddrBus]    r_pc_addr; 
     always @(posedge i_Clk) begin
         if (i_reset == `ResetEnable) begin
-            o_pc_addr <= 32'h0; 
+            r_pc_addr <= 32'h0; 
         end
         else if (i_jump_flag == `JumpEnable) begin
-            o_pc_addr <= i_jump_addr;
+            r_pc_addr <= i_jump_addr;
         end
         else if (i_hold_flag == `Hold_PC) begin
-            o_pc_addr <= o_pc_addr;
+            r_pc_addr <= r_pc_addr;
         end
         else begin
-            o_pc_addr <= o_pc_addr + 32'h4;
+            r_pc_addr <= r_pc_addr + 32'h4;
         end
+    end
+
+    always @(*) begin
+        o_pc_addr = r_pc_addr;
     end
 
 endmodule
