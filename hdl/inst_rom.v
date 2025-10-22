@@ -1,8 +1,9 @@
 `include "defines.v"
 
 module inst_rom (
-    input wire                  i_ce,
+    // input wire                  i_ce,
     input wire                  i_Clk,
+    input wire                  i_reset,
 
     // write
     input wire                  i_we,
@@ -12,6 +13,7 @@ module inst_rom (
     // read
     input wire[`ROMAddrBus]     i_r_addr,
 
+    // read_result
     output reg[`ROMDataBus]     o_r_data,
     output reg[`ROMAddrBus]     o_r_addr
 );
@@ -21,15 +23,19 @@ module inst_rom (
     initial $readmemh ( "inst_rom.mem", roms);
 
     always @(posedge i_Clk) begin
-        if (i_ce == `ChipEnable) begin
-            if (i_we == `WriteEnable) begin
-                roms[i_w_addr[31:2]] <= i_w_data;
-            end
+        //if (i_ce == `ChipEnable) begin
+        if (i_we == `WriteEnable) begin
+            roms[i_w_addr[31:2]] <= i_w_data;
         end
+        //end
     end
 
     always @ (*) begin
-        if (i_ce == `ChipDisable) begin
+        // if (i_ce == `ChipDisable) begin
+        //     o_r_data = `ZeroWord;
+        //     o_r_addr = `ZeroWord;
+        // end
+        if (i_reset == `ResetEnable) begin
             o_r_data = `ZeroWord;
             o_r_addr = `ZeroWord;
         end

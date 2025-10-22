@@ -23,52 +23,52 @@ module id_ex (
     output reg[`CtrlBus]        o_ctrl          // control bundle
 );
 
-    reg[`InstAddrBus]    r_pc_addr;
-    reg[`InstDataBus]    r_inst_data;
-    reg[`RegsDataBus]    r_reg1_data;
-    reg[`RegsDataBus]    r_reg2_data;
-    reg[`RegsAddrBus]    r_regd_addr;
-    reg[`ImmDataBus]     r_imm_data;
-    reg[`CtrlBus]        r_ctrl;
+    // reg[`InstAddrBus]    r_pc_addr;
+    // reg[`InstDataBus]    r_inst_data;
+    // reg[`RegsDataBus]    r_reg1_data;
+    // reg[`RegsDataBus]    r_reg2_data;
+    // reg[`RegsAddrBus]    r_regd_addr;
+    // reg[`ImmDataBus]     r_imm_data;
+    // reg[`CtrlBus]        r_ctrl;
 
-    always @(posedge i_Clk) begin
+    always @(posedge i_Clk or posedge i_reset) begin
         if (i_reset == `ResetEnable) begin
-            r_pc_addr <= `Reg0Addr;
-            r_inst_data <= `ZeroWord;
-            r_reg1_data <= `ZeroWord;
-            r_reg2_data <= `ZeroWord;
-            r_regd_addr <= `Reg0Addr;
-            r_imm_data <= `ZeroWord;
-            r_ctrl <= `ZeroHalf;
+            o_pc_addr <= `Reg0Addr;
+            o_inst_data <= `ZeroWord;
+            o_reg1_data <= `ZeroWord;
+            o_reg2_data <= `ZeroWord;
+            o_regd_addr <= `Reg0Addr;
+            o_imm_data <= `ZeroWord;
+            o_ctrl <= `ZeroHalf;
         end
-        else if (i_hold_flag == `Hold_ID) begin
-            r_pc_addr <= r_pc_addr;
-            r_inst_data <= r_inst_data;
-            r_reg1_data <= r_reg1_data;
-            r_reg2_data <= r_reg2_data;
-            r_regd_addr <= r_regd_addr;
-            r_imm_data <= r_imm_data;
-            r_ctrl <= r_ctrl;
+        else if (i_hold_flag == `HoldEnable) begin
+            o_pc_addr <= `Reg0Addr;
+            o_inst_data <= `NOP;
+            o_reg1_data <= `ZeroWord;
+            o_reg2_data <= `ZeroWord;
+            o_regd_addr <= `ZeroWord;
+            o_imm_data <= `ZeroWord;
+            o_ctrl <= `ZeroHalf;
         end
         else begin
-            r_pc_addr <= i_pc_addr;
-            r_inst_data <= i_inst_data;
-            r_reg1_data <= i_reg1_data;
-            r_reg2_data <= i_reg2_data;
-            r_regd_addr <= i_regd_addr;
-            r_imm_data <= i_imm_data;
-            r_ctrl <= i_ctrl;
+            o_pc_addr <= i_pc_addr;
+            o_inst_data <= i_inst_data;
+            o_reg1_data <= i_reg1_data;
+            o_reg2_data <= i_reg2_data;
+            o_regd_addr <= i_regd_addr;
+            o_imm_data <= i_imm_data;
+            o_ctrl <= i_ctrl;
         end
     end
 
-    always @(*) begin
-        o_pc_addr <= r_pc_addr;
-        o_inst_data <= r_inst_data;
-        o_reg1_data <= r_reg1_data;
-        o_reg2_data <= r_reg2_data;
-        o_regd_addr <= r_regd_addr;
-        o_imm_data <= r_imm_data;
-        o_ctrl <= r_ctrl;
-    end
+    // always @(*) begin
+    //     o_pc_addr <= r_pc_addr;
+    //     o_inst_data <= r_inst_data;
+    //     o_reg1_data <= r_reg1_data;
+    //     o_reg2_data <= r_reg2_data;
+    //     o_regd_addr <= r_regd_addr;
+    //     o_imm_data <= r_imm_data;
+    //     o_ctrl <= r_ctrl;
+    // end
 
 endmodule

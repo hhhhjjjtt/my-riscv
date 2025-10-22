@@ -19,16 +19,19 @@ module regs (
 
     // to id 
     output reg[`RegsDataBus]    o_r_data1,      // read data 1
-    output reg[`RegsDataBus]    o_r_data2,      // read data 2
+    output reg[`RegsDataBus]    o_r_data2       // read data 2
 );
     reg[`RegsDataBus] regs[0:`RegsNum - 1];
-
+    integer i;
     // write
-    always @(posedge i_Clk) begin
-        if (i_reset == `ResetDisable) begin
-            if (i_we == `WriteEnable && i_w_addr != `Reg0Addr) begin
-                regs[i_w_addr] <= i_w_data;
+    always @(posedge i_Clk or posedge i_reset) begin
+        if (i_reset == `ResetEnable) begin
+            for (i = 0; i < `RegsNum; i = i + 1) begin
+                regs[i] <= `ZeroWord;
             end
+        end
+        else if ((i_we == `WriteEnable) && (i_w_addr != `Reg0Addr)) begin
+            regs[i_w_addr] <= i_w_data;
         end
     end
 

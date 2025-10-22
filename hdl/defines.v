@@ -1,21 +1,21 @@
-`define InstAddrBus     31:0
-`define InstDataBus     31:0
+`define InstAddrBus         31:0
+`define InstDataBus         31:0
 
 // reset
-`define ResetEnable     1'b1
-`define ResetDisable    1'b0
+`define ResetEnable         1'b1
+`define ResetDisable        1'b0
 
 // ce
-`define ChipEnable      1'b1
-`define ChipDisable     1'b0
+`define ChipEnable          1'b1
+`define ChipDisable         1'b0
 
 // we
-`define WriteEnable     1'b1
-`define WriteDisable    1'b0
+`define WriteEnable         1'b1
+`define WriteDisable        1'b0
 
 // jump
-`define JumpEnable      1'b1
-`define JumpDisable     1'b0
+`define JumpEnable          1'b1
+`define JumpDisable         1'b0
 
 // hold
 `define NOP                 32'h00000013
@@ -36,26 +36,26 @@
 `define hold_id_ex_index    2'b00
 
 // regs
-`define RegsAddrBus     4:0
-`define RegsDataBus     31:0
-`define RegsNum         32
+`define RegsAddrBus         4:0
+`define RegsDataBus         31:0
+`define RegsNum             32
 
-`define Reg0Addr        5'b0
-`define ZeroWord        32'b0
-`define ZeroHalf        16'b0
+`define Reg0Addr            5'b0
+`define ZeroWord            32'b0
+`define ZeroHalf            16'b0
 
-// inst_rom
-`define ROMAddrBus      31:0
-`define ROMDataBus      31:0
-`define ROMNum          4096// 4096
+// inst_rom 
+`define ROMAddrBus          31:0
+`define ROMDataBus          31:0
+`define ROMNum              4096
 
-// data_ram
-`define RAMAddrBus      31:0
-`define RAMDataBus      31:0
-`define RAMNum          4096
+// data_ram 
+`define RAMAddrBus          31:0
+`define RAMDataBus          31:0
+`define RAMNum              4096
 
 // id
-`define ImmDataBus      31:0
+`define ImmDataBus          31:0
 
 // ----Integer Operation----
 `define U_OPCODE_LUI        7'b0110111
@@ -166,3 +166,6 @@
 `define ctrl_MEM_op_word        3'b010      // 4 bytes
 `define ctrl_MEM_op_ubyte       3'b100      // 1 byte, unsigned
 `define ctrl_MEM_op_uhalf       3'b101      // 2 bytes, unsigned
+
+
+

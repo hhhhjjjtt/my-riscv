@@ -19,24 +19,39 @@ module pc (
     output reg[`InstAddrBus]    o_pc_addr       // pc counter 
 );
 
-    reg[`InstAddrBus]    r_pc_addr; 
-    always @(posedge i_Clk) begin
+    // reg[`InstAddrBus]    r_pc_addr; 
+    // always @(posedge i_Clk) begin
+    //     if (i_reset == `ResetEnable) begin
+    //         r_pc_addr <= 32'h0; 
+    //     end
+    //     else if (i_jump_flag == `JumpEnable) begin
+    //         r_pc_addr <= i_jump_addr;
+    //     end
+    //     else if (i_hold_flag == `HoldEnable) begin
+    //         r_pc_addr <= r_pc_addr;
+    //     end
+    //     else begin
+    //         r_pc_addr <= r_pc_addr + 32'h4;
+    //     end
+    // end
+
+    // always @(*) begin
+    //     o_pc_addr = r_pc_addr;
+    // end
+
+    always @(posedge i_Clk or posedge i_reset) begin
         if (i_reset == `ResetEnable) begin
-            r_pc_addr <= 32'h0; 
+            o_pc_addr <= 32'h0; 
         end
         else if (i_jump_flag == `JumpEnable) begin
-            r_pc_addr <= i_jump_addr;
+            o_pc_addr <= i_jump_addr;
         end
-        else if (i_hold_flag == `Hold_PC) begin
-            r_pc_addr <= r_pc_addr;
+        else if (i_hold_flag == `HoldEnable) begin
+            o_pc_addr <= o_pc_addr;
         end
         else begin
-            r_pc_addr <= r_pc_addr + 32'h4;
+            o_pc_addr <= o_pc_addr + 32'h4;
         end
-    end
-
-    always @(*) begin
-        o_pc_addr = r_pc_addr;
     end
 
 endmodule

@@ -1,8 +1,9 @@
 `include "defines.v"
 
 module data_ram (
-    input wire                  i_ce,
+    // input wire                  i_ce,
     input wire                  i_Clk,
+    input wire                  i_reset,
 
     // write
     input wire                  i_we,
@@ -13,21 +14,25 @@ module data_ram (
     input wire[`RAMAddrBus]     i_r_addr,
 
     output reg[`RAMDataBus]     o_r_data,
-    output reg[`RAMAddrBus]     o_r_addr,
+    output reg[`RAMAddrBus]     o_r_addr
 );
 
     reg[`RAMDataBus] rams[0:`RAMNum - 1];
 
     always @(posedge i_Clk) begin
-        if (i_ce == `ChipEnable) begin
-            if (i_we == `WriteEnable) begin
-                rams[i_w_addr[31:2]] <= i_w_data;
-            end
+        //if (i_ce == `ChipEnable) begin
+        if (i_we == `WriteEnable) begin
+            rams[i_w_addr[31:2]] <= i_w_data;
         end
+        //end
     end
 
     always @ (*) begin
-        if (i_ce == `ChipDisable) begin
+        // if (i_ce == `ChipDisable) begin
+        //     o_r_data = `ZeroWord;
+        //     o_r_addr = `ZeroWord;
+        // end
+        if (i_reset == `ResetEnable) begin
             o_r_data = `ZeroWord;
             o_r_addr = `ZeroWord;
         end
