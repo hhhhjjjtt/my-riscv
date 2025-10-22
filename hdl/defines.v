@@ -18,14 +18,22 @@
 `define JumpDisable     1'b0
 
 // hold
-`define HoldEnable      1'b1
-`define HoldDisable     1'b0
+`define NOP                 32'h00000013
+`define HoldEnable          1'b1
+`define HoldDisable         1'b0
 
-`define HoldFlagBus     2:0
-`define Hold_None       1'b0
-`define Hold_PC         1'b1
-`define Hold_IF         1'b1
-`define Hold_ID         1'b1
+`define HoldTypeBus         1:0
+`define hold_type_none      2'b00
+`define hold_type_branch    2'b01
+`define hold_type_load      2'b10
+
+`define HoldFlagBus         2:0
+`define hold_flag_none      3'b000
+`define hold_flag_branch    3'b011
+`define hold_flag_load      3'b111
+`define hold_pc_index       2'b10
+`define hold_if_id_index    2'b01
+`define hold_id_ex_index    2'b00
 
 // regs
 `define RegsAddrBus     4:0

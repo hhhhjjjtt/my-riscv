@@ -25,8 +25,8 @@ module ex (
     output reg[`RAMAddrBus]     o_mem_w_addr,   // write address of data ram
     output reg[`RAMDataBus]     o_mem_w_data,   // write data of data ram
 
-    // to pc
-    output reg                  o_hold_flag,
+    // to hold_ctrl
+    output reg[`HoldTypeBus]    o_hold_type,
     output reg                  o_jump_flag,
     output reg[`InstAddrBus]    o_jump_addr
 );
