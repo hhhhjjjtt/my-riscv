@@ -1,118 +1,124 @@
-`define InstAddrBus         31:0
-`define InstDataBus         31:0
+`define InstAddrBus             31:0
+`define InstDataBus             31:0
+    
+// reset    
+`define ResetEnable             1'b1
+`define ResetDisable            1'b0
+    
+// ce   
+`define ChipEnable              1'b1
+`define ChipDisable             1'b0
+    
+// we   
+`define WriteEnable             1'b1
+`define WriteDisable            1'b0
+    
+// jump 
+`define JumpEnable              1'b1
+`define JumpDisable             1'b0
+    
+// hold 
+`define NOP                     32'h00000013
+`define HoldEnable              1'b1
+`define HoldDisable             1'b0
+    
+`define HoldTypeBus             1:0
+`define hold_type_none          2'b00
+`define hold_type_branch        2'b01
+`define hold_type_load          2'b10
+    
+`define branch_enable           1'b1
+`define branch_disable          1'b0
+    
+`define load_enable             1'b1
+`define load_disable            1'b0
+    
+`define HoldFlagBus             2:0
+`define hold_flag_none          3'b000
+`define hold_flag_branch        3'b011
+`define hold_flag_load          3'b111
+`define hold_pc_index           2'b10
+`define hold_if_id_index        2'b01
+`define hold_id_ex_index        2'b00
 
-// reset
-`define ResetEnable         1'b1
-`define ResetDisable        1'b0
+// regs 
+`define RegsAddrBus             4:0
+`define RegsDataBus             31:0
+`define RegsNum                 32
 
-// ce
-`define ChipEnable          1'b1
-`define ChipDisable         1'b0
+`define Reg0Addr                5'b0
+`define ZeroWord                32'b0
+`define ZeroHalf                16'b0
 
-// we
-`define WriteEnable         1'b1
-`define WriteDisable        1'b0
+// inst_rom     
+`define ROMAddrBus              31:0
+`define ROMDataBus              31:0
+`define ROMNum                  4096
 
-// jump
-`define JumpEnable          1'b1
-`define JumpDisable         1'b0
+// data_ram     
+`define RAMAddrBus              31:0
+`define RAMDataBus              31:0
+`define RAMNum                  4096
 
-// hold
-`define NOP                 32'h00000013
-`define HoldEnable          1'b1
-`define HoldDisable         1'b0
-
-`define HoldTypeBus         1:0
-`define hold_type_none      2'b00
-`define hold_type_branch    2'b01
-`define hold_type_load      2'b10
-
-`define HoldFlagBus         2:0
-`define hold_flag_none      3'b000
-`define hold_flag_branch    3'b011
-`define hold_flag_load      3'b111
-`define hold_pc_index       2'b10
-`define hold_if_id_index    2'b01
-`define hold_id_ex_index    2'b00
-
-// regs
-`define RegsAddrBus         4:0
-`define RegsDataBus         31:0
-`define RegsNum             32
-
-`define Reg0Addr            5'b0
-`define ZeroWord            32'b0
-`define ZeroHalf            16'b0
-
-// inst_rom 
-`define ROMAddrBus          31:0
-`define ROMDataBus          31:0
-`define ROMNum              4096
-
-// data_ram 
-`define RAMAddrBus          31:0
-`define RAMDataBus          31:0
-`define RAMNum              4096
-
-// id
-`define ImmDataBus          31:0
+// id   
+`define ImmDataBus              31:0
 
 // ----Integer Operation----
-`define U_OPCODE_LUI        7'b0110111
+`define U_OPCODE_LUI            7'b0110111
 
-`define U_OPCODE_AUIPC      7'b0010111
+`define U_OPCODE_AUIPC          7'b0010111
 
-`define I_OPCODE_OP_IMM     7'b0010011
-`define funct3_addi         3'b000
-`define funct3_slti         3'b010
-`define funct3_sltiu        3'b011
-`define funct3_xori         3'b100
-`define funct3_ori          3'b110
-`define funct3_andi         3'b111
-`define funct3_slli         3'b001
-`define funct3_srli_srai    3'b101
-`define funct7_digit6_srli  1'b0
-`define funct7_digit6_srai  1'b1
+`define I_OPCODE_OP_IMM         7'b0010011
+`define funct3_addi             3'b000
+`define funct3_slti             3'b010
+`define funct3_sltiu            3'b011
+`define funct3_xori             3'b100
+`define funct3_ori              3'b110
+`define funct3_andi             3'b111
+`define funct3_slli             3'b001
+`define funct3_srli_srai        3'b101
+`define funct7_digit6_srli      1'b0
+`define funct7_digit6_srai      1'b1
 
-`define R_OPCODE            7'b0110011
-`define funct3_add_sub      3'b000
-`define funct7_digit6_add   1'b0
-`define funct7_digit6_sub   1'b1
-`define funct3_sll          3'b001
-`define funct3_slt          3'b010
-`define funct3_sltu         3'b011
-`define funct3_xor          3'b100
-`define funct3_srl_sra      3'b101
-`define funct7_digit6_srl   1'b0
-`define funct7_digit6_sra   1'b1
-`define funct3_or           3'b110
-`define funct3_and          3'b111
+`define R_OPCODE                7'b0110011
+`define funct3_add_sub          3'b000
+`define funct7_digit6_add       1'b0
+`define funct7_digit6_sub       1'b1
+`define funct3_sll              3'b001
+`define funct3_slt              3'b010
+`define funct3_sltu             3'b011
+`define funct3_xor              3'b100
+`define funct3_srl_sra          3'b101
+`define funct7_digit6_srl       1'b0
+`define funct7_digit6_sra       1'b1
+`define funct3_or               3'b110
+`define funct3_and              3'b111
 
 // ----Control Transfer Operation----
-`define J_OPCODE_JAL        7'b1101111
+`define J_OPCODE_JAL            7'b1101111
 
-`define J_OPCODE_JALR       7'b1100111
+`define J_OPCODE_JALR           7'b1100111
 
-`define B_OPCODE            7'b1100011
-`define funct3_beq          3'b000
-`define funct3_bne          3'b001
-`define funct3_blt          3'b100
-`define funct3_bge          3'b101
-`define funct3_bltu         3'b110
-`define funct3_bgeu         3'b111
+`define B_OPCODE                7'b1100011
+`define funct3_beq              3'b000
+`define funct3_bne              3'b001
+`define funct3_blt              3'b100
+`define funct3_bge              3'b101
+`define funct3_bltu             3'b110
+`define funct3_bgeu             3'b111
 
 // ----Memory Access Operation----
-`define I_OPCODE_LOAD       7'b0000011
-`define funct3_lb           3'b000
-`define funct3_lh           3'b001
-`define funct3_lw           3'b010
-`define funct3_lbu          3'b100
-`define funct3_lhu          3'b101
+`define I_OPCODE_LOAD           7'b0000011
+`define funct3_lb               3'b000
+`define funct3_lh               3'b001
+`define funct3_lw               3'b010
+`define funct3_lbu              3'b100
+`define funct3_lhu              3'b101
 
-`define S_OPCODE_STORE      7'b0100011
-`define funct3_sb           3'b000
-`define funct3_sh           3'b001
-`define funct3_sw           3'b010
+`define S_OPCODE_STORE          7'b0100011
+`define funct3_sb               3'b000
+`define funct3_sh               3'b001
+`define funct3_sw               3'b010
 
 // ----Control Bundle----
 `define CtrlBus                 15:0
