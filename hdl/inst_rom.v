@@ -13,14 +13,20 @@ module inst_rom (
     // read
     input wire[`ROMAddrBus]     i_r_addr,
 
-    // read_result
+    // read result
     output reg[`ROMDataBus]     o_r_data,
     output reg[`ROMAddrBus]     o_r_addr
 );
 
     reg[`ROMDataBus] roms[0:`ROMNum - 1];
 
-    initial $readmemh ( "inst_rom.mem", roms);
+    integer i;
+    initial begin
+        for (i = 0; i < `ROMNum; i = i + 1) begin
+            roms[i] = `NOP;
+        end
+        $readmemh ( "inst_rom.mem", roms);
+    end
 
     always @(posedge i_Clk) begin
         //if (i_ce == `ChipEnable) begin

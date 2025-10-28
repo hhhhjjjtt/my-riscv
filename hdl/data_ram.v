@@ -13,11 +13,19 @@ module data_ram (
     // read
     input wire[`RAMAddrBus]     i_r_addr,
 
+    // read result
     output reg[`RAMDataBus]     o_r_data,
     output reg[`RAMAddrBus]     o_r_addr
 );
 
     reg[`RAMDataBus] rams[0:`RAMNum - 1];
+
+    integer i;
+    initial begin
+        for (i = 0; i < `RAMNum; i = i + 1) begin
+            rams[i] = `ZeroWord;
+        end
+    end
 
     always @(posedge i_Clk) begin
         //if (i_ce == `ChipEnable) begin
