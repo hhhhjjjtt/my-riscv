@@ -12,4 +12,5 @@ _boot:
     addi x5 , x0 , 2
 	slli x6 , x5 , 2
 
-
+end:
+    j end                     # infinite loop
