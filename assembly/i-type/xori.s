@@ -2,9 +2,9 @@
 .text
 
 _boot:
-    /* Test ORI */
+    /* Test XORI */
     addi x1 , x0 , 100      /* x1 = 1100100 */
-	ori x2 , x1 , 27        /* x2 = x1 || 0011011, should be 1111111 */
+	xori x2 , x1 , 7        /* x2 = x1 ^ 0000111, should be 1100011 */
 
 end:
     j end                     # infinite loop
