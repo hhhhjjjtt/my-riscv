@@ -1,6 +1,7 @@
 `include "defines.v"
 
 module ex (
+    input wire                  i_Clk,
     input wire                  i_reset,
 
     input wire[`InstAddrBus]    i_pc_addr,      // pc address
@@ -187,21 +188,30 @@ module ex (
         end 
     end
 
+    wire         load_busy;    // beat 1 (addr phase)
+    reg         write_back;   // beat 2 (data/WB phase)
+    reg         r_regd_we;
+    reg[`RegsAddrBus] r_regd_w_addr;
+    reg [2:0]   r_ctrl_MEM_op;
+    reg         r_ctrl_MemtoReg_SRC; // will be MEM
+
     // data ram operation length
     reg[`RegsDataBus] mem_r_result;             // data ram fetch result
+    wire[2:0] MEM_op = write_back ? r_ctrl_MEM_op : ctrl_MEM_op;
     always @(*) begin
         if (i_reset == `ResetEnable) begin
             o_mem_we = `WriteDisable;
             o_mem_r_addr = `ZeroWord;
             o_mem_w_addr = `ZeroWord;
             o_mem_w_data = `ZeroWord;
+            mem_r_result= `ZeroWord;
         end
         else begin
             o_mem_we = ctrl_MEM_we;             // data ram write enable
             o_mem_r_addr = alu_result;          // data ram read address
             o_mem_w_addr = alu_result;          // data ram write address
 
-            case (ctrl_MEM_op)
+            case (MEM_op)
                 `ctrl_MEM_op_byte: begin
                     mem_r_result = {{24{i_mem_r_data[7]}}, i_mem_r_data[7:0]};
                     o_mem_w_data = {{24{i_reg2_data[7]}}, i_reg2_data[7:0]};
@@ -230,22 +240,100 @@ module ex (
         end
     end
 
+    wire is_load = (ctrl_MemtoReg_SRC == `ctrl_MemtoReg_SRC_MEM) &&
+                   (ctrl_REG_we == `ctrl_REG_we_Enable) &&
+                   (i_regd_addr != `Reg0Addr);
+    assign load_busy = is_load;
+
+    always @(posedge i_Clk or posedge i_reset) begin
+        if (i_reset == `ResetEnable) begin
+            // load_busy           <= 1'b0;
+            write_back          <= 1'b0;
+            r_regd_we           <= `WriteDisable;
+            r_regd_w_addr       <= `Reg0Addr;
+            r_ctrl_MEM_op       <= `ctrl_MEM_op_word;
+            r_ctrl_MemtoReg_SRC <= `ctrl_MemtoReg_SRC_ALU;
+        end else begin
+            // Default advance
+            write_back <= load_busy;
+
+            // load_busy <= is_load;
+
+            // Latch WB controls for the load we are issuing now
+            if (is_load) begin
+                r_regd_we           <= ctrl_REG_we;
+                r_regd_w_addr       <= i_regd_addr;
+                r_ctrl_MEM_op       <= ctrl_MEM_op;
+                r_ctrl_MemtoReg_SRC <= ctrl_MemtoReg_SRC; // MEM
+            end
+        end
+    end
+
+    always @(*) begin
+        o_hold_type = {(is_load && !write_back), branch_en};
+    end
+
+    wire MemtoReg_SRC = write_back ? r_ctrl_MemtoReg_SRC : ctrl_MemtoReg_SRC;
+
+    /*
+
+    // load hazard control
+    wire is_load = (ctrl_MemtoReg_SRC == `ctrl_MemtoReg_SRC_MEM) &&
+                   (ctrl_REG_we == `ctrl_REG_we_Enable) &&
+                   (i_regd_addr != `Reg0Addr);
+
+    wire load_start = load_en;
+    reg load_busy;
+    reg write_back;
+    reg r_regd_we;
+    reg[`RegsAddrBus] r_regd_w_addr;
+    reg [2:0] r_ctrl_MEM_op;
+    reg r_ctrl_MemtoReg_SRC;
+    always @(posedge i_Clk) begin
+        if (i_reset == `ResetEnable) begin
+            load_busy <= 0;
+            write_back <= 0;
+            r_regd_we <= `WriteDisable;
+            r_regd_w_addr <= `Reg0Addr;
+            r_ctrl_MEM_op <= `ctrl_MEM_op_word;
+            r_ctrl_MemtoReg_SRC <= `ctrl_MemtoReg_SRC_ALU;
+        end
+        else begin
+            if (load_start) begin
+                load_busy <= 1;
+                write_back <= 0;
+                r_regd_we <= ctrl_REG_we;
+                r_regd_w_addr <= i_regd_addr;
+                r_ctrl_MEM_op <= ctrl_MEM_op;
+                r_ctrl_MemtoReg_SRC <= ctrl_MemtoReg_SRC;
+            end
+            else if (load_busy) begin
+                load_busy <= 0;
+                write_back <= 1;
+            end
+            else if (write_back) begin
+                write_back <= 0;
+            end
+        end
+    end
+    wire MemtoReg_SRC = write_back ? r_ctrl_MemtoReg_SRC : ctrl_MemtoReg_SRC;
+
     // load hazard control
     always @(*) begin
         if (i_reset == `ResetEnable) begin
             load_en = `load_disable;
         end
         else begin
-            load_en = (ctrl_MemtoReg_SRC == `ctrl_MemtoReg_SRC_MEM) &&
-                      (ctrl_REG_we == `ctrl_REG_we_Enable) &&
-                      (i_regd_addr != `Reg0Addr);
+            load_en = is_load && !load_busy;
         end
     end
+    
+    */
 
     // hold control
-    always @(*) begin
-        o_hold_type = {load_en, branch_en};
-    end
+    // always @(*) begin
+    //     o_hold_type = {load_en, branch_en};
+    // end
 
     // rd write
     always @(*) begin
@@ -255,17 +343,23 @@ module ex (
             o_regd_w_data = `ZeroWord;
         end
         else begin
-            o_regd_we = ctrl_REG_we;                // rd write enable
-            o_regd_w_addr = i_regd_addr;            // rd addr
+//            o_regd_we = load_busy ? r_regd_we : ctrl_REG_we;                // rd write enable
+//            o_regd_w_addr = load_busy ? r_regd_w_addr : i_regd_addr;            // rd addr
 
-            case (ctrl_MemtoReg_SRC)                // ALU or mem result to be written to rd
+            case (MemtoReg_SRC)                // ALU or mem result to be written to rd
                 `ctrl_MemtoReg_SRC_ALU: begin
+                    o_regd_we = ctrl_REG_we;
+                    o_regd_w_addr = i_regd_addr;
                     o_regd_w_data = alu_result;
                 end 
                 `ctrl_MemtoReg_SRC_MEM: begin
+                    o_regd_we = write_back ? r_regd_we : `WriteDisable;
+                    o_regd_w_addr = write_back ? r_regd_w_addr : `Reg0Addr;
                     o_regd_w_data = mem_r_result;
                 end 
                 default: begin
+                    o_regd_we = ctrl_REG_we;
+                    o_regd_w_addr = i_regd_addr;
                     o_regd_w_data = alu_result;
                 end
             endcase

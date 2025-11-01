@@ -41,7 +41,7 @@ module id_ex (
             o_imm_data <= `ZeroWord;
             o_ctrl <= `ZeroHalf;
         end
-        else if (i_hold_flag == `HoldEnable) begin
+        else if (i_hold_flag == `ID_EX_flush) begin
             o_pc_addr <= `Reg0Addr;
             o_inst_data <= `NOP;
             o_reg1_data <= `ZeroWord;

@@ -21,7 +21,14 @@
 `define NOP                     32'h00000013
 `define HoldEnable              1'b1
 `define HoldDisable             1'b0
-    
+
+`define PC_hold                 1'b1
+
+`define IF_ID_flush             2'b11
+`define IF_ID_hold              2'b10
+
+`define ID_EX_flush             1'b1
+
 `define HoldTypeBus             1:0
 `define hold_type_none          2'b00
 `define hold_type_branch        2'b01
@@ -33,10 +40,10 @@
 `define load_enable             1'b1
 `define load_disable            1'b0
     
-`define HoldFlagBus             2:0
-`define hold_flag_none          3'b000
-`define hold_flag_branch        3'b011
-`define hold_flag_load          3'b111
+`define HoldFlagBus             3:0
+`define hold_flag_none          4'b0000
+`define hold_flag_branch        4'b0111
+`define hold_flag_load          4'b1101
 `define hold_pc_index           2'b10
 `define hold_if_id_index        2'b01
 `define hold_id_ex_index        2'b00

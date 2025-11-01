@@ -46,7 +46,7 @@ module pc (
         else if (i_jump_flag == `JumpEnable) begin
             o_pc_addr <= i_jump_addr;
         end
-        else if (i_hold_flag == `HoldEnable) begin
+        else if (i_hold_flag == `PC_hold) begin
             o_pc_addr <= o_pc_addr;
         end
         else begin
