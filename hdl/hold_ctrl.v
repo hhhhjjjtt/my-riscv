@@ -1,3 +1,10 @@
+/*  hold control
+-   recieve hold flag from ex stage
+-   send corresponding hold/flush signals to pc/if_id/id_ex buffer
+*/
+
+`include "defines.v"
+
 module hold_ctrl (
     input wire                  i_reset,
 

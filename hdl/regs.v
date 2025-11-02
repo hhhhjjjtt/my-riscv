@@ -1,5 +1,5 @@
-/*  regs
-- 32 registers, each with 32 bits
+/*  register file
+-   32 registers, each with 32 bits
 */
 
 `include "defines.v"

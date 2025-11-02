@@ -179,6 +179,3 @@
 `define ctrl_MEM_op_word        3'b010      // 4 bytes
 `define ctrl_MEM_op_ubyte       3'b100      // 1 byte, unsigned
 `define ctrl_MEM_op_uhalf       3'b101      // 2 bytes, unsigned
-
-
-

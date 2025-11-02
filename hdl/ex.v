@@ -1,3 +1,10 @@
+/*  execution
+-   accept information from id stage and based on that,
+-   perform ALU operation, or branch, or memory operation,
+    and write to register file or data ram
+-   generate corresponding hold flag for branch or load
+*/
+
 `include "defines.v"
 
 module ex (
@@ -188,12 +195,46 @@ module ex (
         end 
     end
 
-    wire         load_busy;    // beat 1 (addr phase)
-    reg         write_back;   // beat 2 (data/WB phase)
-    reg         r_regd_we;
-    reg[`RegsAddrBus] r_regd_w_addr;
-    reg [2:0]   r_ctrl_MEM_op;
-    reg         r_ctrl_MemtoReg_SRC; // will be MEM
+    // load registers
+    wire                load_busy;              // beat 1
+    reg                 write_back;             // beat 2
+    reg                 r_regd_we;  
+    reg[`RegsAddrBus]   r_regd_w_addr;
+    reg [2:0]           r_ctrl_MEM_op;
+    reg                 r_ctrl_MemtoReg_SRC;    // will be MEM
+    assign load_busy = (ctrl_MemtoReg_SRC == `ctrl_MemtoReg_SRC_MEM) &&
+                   (ctrl_REG_we == `ctrl_REG_we_Enable) &&
+                   (i_regd_addr != `Reg0Addr);
+    always @(posedge i_Clk or posedge i_reset) begin
+        if (i_reset == `ResetEnable) begin
+            write_back          <= 1'b0;
+            r_regd_we           <= `WriteDisable;
+            r_regd_w_addr       <= `Reg0Addr;
+            r_ctrl_MEM_op       <= `ctrl_MEM_op_word;
+            r_ctrl_MemtoReg_SRC <= `ctrl_MemtoReg_SRC_ALU;
+        end else begin
+            /*  upon load, store destination register and 
+                memory control signal to load registers
+                (since we will be flushing the ex for one cycle)
+            */
+            write_back <= load_busy;
+            if (load_busy) begin
+                r_regd_we           <= ctrl_REG_we;
+                r_regd_w_addr       <= i_regd_addr;
+                r_ctrl_MEM_op       <= ctrl_MEM_op;
+                r_ctrl_MemtoReg_SRC <= ctrl_MemtoReg_SRC;
+            end
+        end
+    end
+
+    always @(*) begin
+        load_en = load_busy && !write_back;
+    end
+    
+    // hold control
+    always @(*) begin
+        o_hold_type = {load_en, branch_en};
+    end
 
     // data ram operation length
     reg[`RegsDataBus] mem_r_result;             // data ram fetch result
@@ -240,102 +281,8 @@ module ex (
         end
     end
 
-    wire is_load = (ctrl_MemtoReg_SRC == `ctrl_MemtoReg_SRC_MEM) &&
-                   (ctrl_REG_we == `ctrl_REG_we_Enable) &&
-                   (i_regd_addr != `Reg0Addr);
-    assign load_busy = is_load;
-
-    always @(posedge i_Clk or posedge i_reset) begin
-        if (i_reset == `ResetEnable) begin
-            // load_busy           <= 1'b0;
-            write_back          <= 1'b0;
-            r_regd_we           <= `WriteDisable;
-            r_regd_w_addr       <= `Reg0Addr;
-            r_ctrl_MEM_op       <= `ctrl_MEM_op_word;
-            r_ctrl_MemtoReg_SRC <= `ctrl_MemtoReg_SRC_ALU;
-        end else begin
-            // Default advance
-            write_back <= load_busy;
-
-            // load_busy <= is_load;
-
-            // Latch WB controls for the load we are issuing now
-            if (is_load) begin
-                r_regd_we           <= ctrl_REG_we;
-                r_regd_w_addr       <= i_regd_addr;
-                r_ctrl_MEM_op       <= ctrl_MEM_op;
-                r_ctrl_MemtoReg_SRC <= ctrl_MemtoReg_SRC; // MEM
-            end
-        end
-    end
-
-    always @(*) begin
-        o_hold_type = {(is_load && !write_back), branch_en};
-    end
-
-    wire MemtoReg_SRC = write_back ? r_ctrl_MemtoReg_SRC : ctrl_MemtoReg_SRC;
-
-    /*
-
-    // load hazard control
-    wire is_load = (ctrl_MemtoReg_SRC == `ctrl_MemtoReg_SRC_MEM) &&
-                   (ctrl_REG_we == `ctrl_REG_we_Enable) &&
-                   (i_regd_addr != `Reg0Addr);
-
-    wire load_start = load_en;
-    reg load_busy;
-    reg write_back;
-    reg r_regd_we;
-    reg[`RegsAddrBus] r_regd_w_addr;
-    reg [2:0] r_ctrl_MEM_op;
-    reg r_ctrl_MemtoReg_SRC;
-    always @(posedge i_Clk) begin
-        if (i_reset == `ResetEnable) begin
-            load_busy <= 0;
-            write_back <= 0;
-            r_regd_we <= `WriteDisable;
-            r_regd_w_addr <= `Reg0Addr;
-            r_ctrl_MEM_op <= `ctrl_MEM_op_word;
-            r_ctrl_MemtoReg_SRC <= `ctrl_MemtoReg_SRC_ALU;
-        end
-        else begin
-            if (load_start) begin
-                load_busy <= 1;
-                write_back <= 0;
-                r_regd_we <= ctrl_REG_we;
-                r_regd_w_addr <= i_regd_addr;
-                r_ctrl_MEM_op <= ctrl_MEM_op;
-                r_ctrl_MemtoReg_SRC <= ctrl_MemtoReg_SRC;
-            end
-            else if (load_busy) begin
-                load_busy <= 0;
-                write_back <= 1;
-            end
-            else if (write_back) begin
-                write_back <= 0;
-            end
-        end
-    end
-    wire MemtoReg_SRC = write_back ? r_ctrl_MemtoReg_SRC : ctrl_MemtoReg_SRC;
-
-    // load hazard control
-    always @(*) begin
-        if (i_reset == `ResetEnable) begin
-            load_en = `load_disable;
-        end
-        else begin
-            load_en = is_load && !load_busy;
-        end
-    end
-    
-    */
-
-    // hold control
-    // always @(*) begin
-    //     o_hold_type = {load_en, branch_en};
-    // end
-
     // rd write
+    wire MemtoReg_SRC = write_back ? r_ctrl_MemtoReg_SRC : ctrl_MemtoReg_SRC;
     always @(*) begin
         if (i_reset == `ResetEnable) begin
             o_regd_we = `WriteDisable;
@@ -343,9 +290,6 @@ module ex (
             o_regd_w_data = `ZeroWord;
         end
         else begin
-//            o_regd_we = load_busy ? r_regd_we : ctrl_REG_we;                // rd write enable
-//            o_regd_w_addr = load_busy ? r_regd_w_addr : i_regd_addr;            // rd addr
-
             case (MemtoReg_SRC)                // ALU or mem result to be written to rd
                 `ctrl_MemtoReg_SRC_ALU: begin
                     o_regd_we = ctrl_REG_we;

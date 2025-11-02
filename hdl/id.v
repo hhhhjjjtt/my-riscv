@@ -1,3 +1,10 @@
+/*  instruction decode
+-   decode instruction from if stage
+-   fetch necessary info from register files
+-   generate immediate
+-   generate control bundle for ALU, branch, Memory control in EX
+*/
+
 `include "defines.v"
 
 module id (
@@ -88,8 +95,6 @@ module id (
             o_regd_addr = rd;
             
             o_imm_data = imm;
-
-            
             
             case (opcode)
                 `U_OPCODE_LUI: begin

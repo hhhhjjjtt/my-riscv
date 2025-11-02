@@ -1,3 +1,8 @@
+/*  data ram
+-   4096 * 32bit addresses
+-   store data
+*/
+
 `include "defines.v"
 
 module data_ram (

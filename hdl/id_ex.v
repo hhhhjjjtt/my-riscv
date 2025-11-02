@@ -1,3 +1,9 @@
+/*  id_ex buffer
+-   hold decoded info produced in id stage for 1 beat, 
+-   then pass info to ex stage
+-   upon ID_EX_flush, output NOP 
+*/
+
 `include "defines.v"
 
 module id_ex (
@@ -22,14 +28,6 @@ module id_ex (
     output reg[`ImmDataBus]     o_imm_data,     // immediate
     output reg[`CtrlBus]        o_ctrl          // control bundle
 );
-
-    // reg[`InstAddrBus]    r_pc_addr;
-    // reg[`InstDataBus]    r_inst_data;
-    // reg[`RegsDataBus]    r_reg1_data;
-    // reg[`RegsDataBus]    r_reg2_data;
-    // reg[`RegsAddrBus]    r_regd_addr;
-    // reg[`ImmDataBus]     r_imm_data;
-    // reg[`CtrlBus]        r_ctrl;
 
     always @(posedge i_Clk or posedge i_reset) begin
         if (i_reset == `ResetEnable) begin
@@ -60,15 +58,5 @@ module id_ex (
             o_ctrl <= i_ctrl;
         end
     end
-
-    // always @(*) begin
-    //     o_pc_addr <= r_pc_addr;
-    //     o_inst_data <= r_inst_data;
-    //     o_reg1_data <= r_reg1_data;
-    //     o_reg2_data <= r_reg2_data;
-    //     o_regd_addr <= r_regd_addr;
-    //     o_imm_data <= r_imm_data;
-    //     o_ctrl <= r_ctrl;
-    // end
 
 endmodule
