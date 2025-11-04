@@ -1,3 +1,5 @@
+// to do: finish up the load byte/load half handling
+
 /*  execution
 -   accept information from id stage and based on that,
 -   perform ALU operation, or branch, or memory operation,
@@ -21,6 +23,7 @@ module ex (
 
     // from data_ram
     input wire[`RAMDataBus]     i_mem_r_data,   // data fetched from data ram
+    input wire[`RAMAddrBus]     i_mem_r_addr,   // data address fetched from data ram
 
     // to regs
     output reg                  o_regd_we,      // rd write enable
@@ -32,6 +35,8 @@ module ex (
     output reg[`RAMAddrBus]     o_mem_r_addr,   // read address of data ram
     output reg[`RAMAddrBus]     o_mem_w_addr,   // write address of data ram
     output reg[`RAMDataBus]     o_mem_w_data,   // write data of data ram
+
+    output reg[1:0]             o_mem_len,
 
     // to hold_ctrl
     output reg[`HoldTypeBus]    o_hold_type,
@@ -135,64 +140,64 @@ module ex (
 
     // branch & branch hazard control
     always @(*) begin
-        if (i_reset == `ResetEnable) begin
-            // o_hold_type = `hold_type_none;
-            branch_en = `branch_disable;
-            o_jump_flag = `JumpDisable;
-            o_jump_addr = `ZeroWord;
-        end
-        else begin
-            case (ctrl_BRANCH)
-                `ctrl_BRANCH_none: begin
-                    // o_hold_type = `hold_type_none;
-                    branch_en = `branch_disable;
-                    o_jump_flag = `JumpDisable;
-                    o_jump_addr = `ZeroWord;
-                end
-                `ctrl_BRANCH_jump: begin
-                    // o_hold_type = `hold_type_branch;
-                    branch_en = `branch_enable;
-                    o_jump_flag = `JumpEnable;
-                    o_jump_addr = i_pc_addr + i_imm_data;
-                end
-                `ctrl_BRANCH_reg_jump: begin
-                    // o_hold_type = `hold_type_branch;
-                    branch_en = `branch_enable;
-                    o_jump_flag = `JumpEnable;
-                    o_jump_addr =  (i_reg1_data + i_imm_data) & ~32'd1;
-                end
-                `ctrl_BRANCH_jump_eq: begin
-                    // o_hold_type = equal_flag ? `hold_type_branch : `hold_type_none;
-                    branch_en = equal_flag ? `branch_enable : `branch_disable;
-                    o_jump_flag = equal_flag ? `JumpEnable : `JumpDisable;
-                    o_jump_addr = i_pc_addr + i_imm_data;
-                end
-                `ctrl_BRANCH_jump_ne: begin
-                    // o_hold_type = equal_flag ? `hold_type_none : `hold_type_branch;
-                    branch_en = equal_flag ? `branch_disable : `branch_enable;
-                    o_jump_flag = equal_flag ? `JumpDisable : `JumpEnable;
-                    o_jump_addr = i_pc_addr + i_imm_data;
-                end
-                `ctrl_BRANCH_jump_l: begin      // slt: A < B
-                    // o_hold_type = (alu_result == 1) ? `hold_type_branch : `hold_type_none;
-                    branch_en = (alu_result == 1) ? `branch_enable : `branch_disable;
-                    o_jump_flag = (alu_result == 1) ? `JumpEnable : `JumpDisable;
-                    o_jump_addr = i_pc_addr + i_imm_data;
-                end
-                `ctrl_BRANCH_jump_ge: begin     // slt: ~(A < B)
-                    // o_hold_type = (alu_result == 1) ? `hold_type_none : `hold_type_branch;
-                    branch_en = (alu_result == 1) ? `branch_disable : `branch_enable;
-                    o_jump_flag = (alu_result == 1) ? `JumpDisable : `JumpEnable;
-                    o_jump_addr = i_pc_addr + i_imm_data;
-                end
-                default: begin
-                    // o_hold_type = `hold_type_none;
-                    branch_en = `branch_disable;
-                    o_jump_flag = `JumpDisable;
-                    o_jump_addr = i_pc_addr + 32'd4;
-                end
-            endcase
-        end 
+        // if (i_reset == `ResetEnable) begin
+        //     // o_hold_type = `hold_type_none;
+        //     branch_en = `branch_disable;
+        //     o_jump_flag = `JumpDisable;
+        //     o_jump_addr = `ZeroWord;
+        // end
+        // else begin
+        case (ctrl_BRANCH)
+            `ctrl_BRANCH_none: begin
+                // o_hold_type = `hold_type_none;
+                branch_en = `branch_disable;
+                o_jump_flag = `JumpDisable;
+                o_jump_addr = `ZeroWord;
+            end
+            `ctrl_BRANCH_jump: begin
+                // o_hold_type = `hold_type_branch;
+                branch_en = `branch_enable;
+                o_jump_flag = `JumpEnable;
+                o_jump_addr = i_pc_addr + i_imm_data;
+            end
+            `ctrl_BRANCH_reg_jump: begin
+                // o_hold_type = `hold_type_branch;
+                branch_en = `branch_enable;
+                o_jump_flag = `JumpEnable;
+                o_jump_addr =  (i_reg1_data + i_imm_data) & ~32'd1;
+            end
+            `ctrl_BRANCH_jump_eq: begin
+                // o_hold_type = equal_flag ? `hold_type_branch : `hold_type_none;
+                branch_en = equal_flag ? `branch_enable : `branch_disable;
+                o_jump_flag = equal_flag ? `JumpEnable : `JumpDisable;
+                o_jump_addr = i_pc_addr + i_imm_data;
+            end
+            `ctrl_BRANCH_jump_ne: begin
+                // o_hold_type = equal_flag ? `hold_type_none : `hold_type_branch;
+                branch_en = equal_flag ? `branch_disable : `branch_enable;
+                o_jump_flag = equal_flag ? `JumpDisable : `JumpEnable;
+                o_jump_addr = i_pc_addr + i_imm_data;
+            end
+            `ctrl_BRANCH_jump_l: begin      // slt: A < B
+                // o_hold_type = (alu_result == 1) ? `hold_type_branch : `hold_type_none;
+                branch_en = (alu_result == 1) ? `branch_enable : `branch_disable;
+                o_jump_flag = (alu_result == 1) ? `JumpEnable : `JumpDisable;
+                o_jump_addr = i_pc_addr + i_imm_data;
+            end
+            `ctrl_BRANCH_jump_ge: begin     // slt: ~(A < B)
+                // o_hold_type = (alu_result == 1) ? `hold_type_none : `hold_type_branch;
+                branch_en = (alu_result == 1) ? `branch_disable : `branch_enable;
+                o_jump_flag = (alu_result == 1) ? `JumpDisable : `JumpEnable;
+                o_jump_addr = i_pc_addr + i_imm_data;
+            end
+            default: begin
+                // o_hold_type = `hold_type_none;
+                branch_en = `branch_disable;
+                o_jump_flag = `JumpDisable;
+                o_jump_addr = `ZeroWord;    // i_pc_addr + 32'd4;
+            end
+        endcase
+        // end 
     end
 
     // load registers
@@ -240,74 +245,127 @@ module ex (
     reg[`RegsDataBus] mem_r_result;             // data ram fetch result
     wire[2:0] MEM_op = write_back ? r_ctrl_MEM_op : ctrl_MEM_op;
     always @(*) begin
-        if (i_reset == `ResetEnable) begin
-            o_mem_we = `WriteDisable;
-            o_mem_r_addr = `ZeroWord;
-            o_mem_w_addr = `ZeroWord;
-            o_mem_w_data = `ZeroWord;
-            mem_r_result= `ZeroWord;
-        end
-        else begin
-            o_mem_we = ctrl_MEM_we;             // data ram write enable
-            o_mem_r_addr = alu_result;          // data ram read address
-            o_mem_w_addr = alu_result;          // data ram write address
+        // if (i_reset == `ResetEnable) begin
+        //     o_mem_we = `WriteDisable;
+        //     o_mem_r_addr = `ZeroWord;
+        //     o_mem_w_addr = `ZeroWord;
+        //     o_mem_w_data = `ZeroWord;
+        //     o_mem_len = `mem_len_word;
+        //     mem_r_result = `ZeroWord;
+        // end
+        // else begin
+        o_mem_we = ctrl_MEM_we;             // data ram write enable
+        o_mem_r_addr = alu_result;          // data ram read address
+        o_mem_w_addr = alu_result;          // data ram write address
 
-            case (MEM_op)
-                `ctrl_MEM_op_byte: begin
-                    mem_r_result = {{24{i_mem_r_data[7]}}, i_mem_r_data[7:0]};
-                    o_mem_w_data = {{24{i_reg2_data[7]}}, i_reg2_data[7:0]};
-                end
-                `ctrl_MEM_op_half: begin
+        case (MEM_op)
+            `ctrl_MEM_op_byte: begin
+                case (i_mem_r_addr[1:0])
+                    `mem_byte_index_0: begin
+                        mem_r_result = {{24{i_mem_r_data[7]}}, i_mem_r_data[7:0]};
+                    end
+                    `mem_byte_index_1: begin
+                        mem_r_result = {{24{i_mem_r_data[15]}}, i_mem_r_data[15:8]};
+                    end
+                    `mem_byte_index_2: begin
+                        mem_r_result = {{24{i_mem_r_data[23]}}, i_mem_r_data[23:16]};
+                    end
+                    `mem_byte_index_3: begin
+                        mem_r_result = {{24{i_mem_r_data[31]}}, i_mem_r_data[31:24]};
+                    end
+                    default: begin
+                        mem_r_result = {{24{i_mem_r_data[7]}}, i_mem_r_data[7:0]};
+                    end
+                endcase
+                // mem_r_result = {{24{i_mem_r_data[7]}}, i_mem_r_data[7:0]};
+                o_mem_w_data = {{24{i_reg2_data[7]}}, i_reg2_data[7:0]};
+                o_mem_len = `mem_len_byte;
+            end
+            `ctrl_MEM_op_half: begin
+                if (i_mem_r_addr[1] == `mem_half_index_0) begin
                     mem_r_result = {{16{i_mem_r_data[15]}}, i_mem_r_data[15:0]};
-                    o_mem_w_data = {{16{i_reg2_data[15]}}, i_reg2_data[15:0]};
+                end 
+                else begin
+                    mem_r_result = {{16{i_mem_r_data[31]}}, i_mem_r_data[31:16]};
                 end
-                `ctrl_MEM_op_word: begin
-                    mem_r_result = i_mem_r_data;
-                    o_mem_w_data = i_reg2_data;
-                end
-                `ctrl_MEM_op_ubyte: begin
-                    mem_r_result = {24'b0, i_mem_r_data[7:0]};
-                    o_mem_w_data = i_reg2_data;
-                end
-                `ctrl_MEM_op_uhalf: begin
+                // mem_r_result = {{16{i_mem_r_data[15]}}, i_mem_r_data[15:0]};
+                o_mem_w_data = {{16{i_reg2_data[15]}}, i_reg2_data[15:0]};
+                o_mem_len = `mem_len_half;
+            end
+            `ctrl_MEM_op_word: begin
+                mem_r_result = i_mem_r_data;
+                o_mem_w_data = i_reg2_data;
+                o_mem_len = `mem_len_word;
+            end
+            `ctrl_MEM_op_ubyte: begin
+                case (i_mem_r_addr[1:0])
+                    `mem_byte_index_0: begin
+                        mem_r_result = {24'b0, i_mem_r_data[7:0]};
+                    end
+                    `mem_byte_index_1: begin
+                        mem_r_result = {24'b0, i_mem_r_data[15:8]};
+                    end
+                    `mem_byte_index_2: begin
+                        mem_r_result = {24'b0, i_mem_r_data[23:16]};
+                    end
+                    `mem_byte_index_3: begin
+                        mem_r_result = {24'b0, i_mem_r_data[31:24]};
+                    end
+                    default: begin
+                        mem_r_result = {24'b0, i_mem_r_data[7:0]};
+                    end
+                endcase
+                // mem_r_result = {24'b0, i_mem_r_data[7:0]};
+                o_mem_w_data = i_reg2_data;
+                o_mem_len = `mem_len_byte;
+            end
+            `ctrl_MEM_op_uhalf: begin
+                if (i_mem_r_addr[1] == `mem_half_index_0) begin
                     mem_r_result = {16'b0, i_mem_r_data[15:0]};
-                    o_mem_w_data = i_reg2_data;
+                end 
+                else begin
+                    mem_r_result = {16'b0, i_mem_r_data[31:16]};
                 end
-                default: begin
-                    mem_r_result = i_mem_r_data;
-                    o_mem_w_data = i_reg2_data;
-                end
-            endcase
-        end
+                // mem_r_result = {16'b0, i_mem_r_data[15:0]};
+                o_mem_w_data = i_reg2_data;
+                o_mem_len = `mem_len_half;
+            end
+            default: begin
+                mem_r_result = i_mem_r_data;
+                o_mem_w_data = i_reg2_data;
+                o_mem_len = `mem_len_word;
+            end
+        endcase
+        // end
     end
 
     // rd write
     wire MemtoReg_SRC = write_back ? r_ctrl_MemtoReg_SRC : ctrl_MemtoReg_SRC;
     always @(*) begin
-        if (i_reset == `ResetEnable) begin
-            o_regd_we = `WriteDisable;
-            o_regd_w_addr = `Reg0Addr;
-            o_regd_w_data = `ZeroWord;
-        end
-        else begin
-            case (MemtoReg_SRC)                // ALU or mem result to be written to rd
-                `ctrl_MemtoReg_SRC_ALU: begin
-                    o_regd_we = ctrl_REG_we;
-                    o_regd_w_addr = i_regd_addr;
-                    o_regd_w_data = alu_result;
-                end 
-                `ctrl_MemtoReg_SRC_MEM: begin
-                    o_regd_we = write_back ? r_regd_we : `WriteDisable;
-                    o_regd_w_addr = write_back ? r_regd_w_addr : `Reg0Addr;
-                    o_regd_w_data = mem_r_result;
-                end 
-                default: begin
-                    o_regd_we = ctrl_REG_we;
-                    o_regd_w_addr = i_regd_addr;
-                    o_regd_w_data = alu_result;
-                end
-            endcase
-        end
+        // if (i_reset == `ResetEnable) begin
+        //     o_regd_we = `WriteDisable;
+        //     o_regd_w_addr = `Reg0Addr;
+        //     o_regd_w_data = `ZeroWord;
+        // end
+        // else begin
+        case (MemtoReg_SRC)                // ALU or mem result to be written to rd
+            `ctrl_MemtoReg_SRC_ALU: begin
+                o_regd_we = ctrl_REG_we;
+                o_regd_w_addr = i_regd_addr;
+                o_regd_w_data = alu_result;
+            end 
+            `ctrl_MemtoReg_SRC_MEM: begin
+                o_regd_we = write_back ? r_regd_we : `WriteDisable;
+                o_regd_w_addr = write_back ? r_regd_w_addr : `Reg0Addr;
+                o_regd_w_data = mem_r_result;
+            end 
+            default: begin
+                o_regd_we = ctrl_REG_we;
+                o_regd_w_addr = i_regd_addr;
+                o_regd_w_data = alu_result;
+            end
+        endcase
+        // end
     end
 
 endmodule

@@ -24,6 +24,7 @@ module inst_rom (
 
     reg[`ROMDataBus] roms[0:`ROMNum - 1];
 
+    // initialize
     integer i;
     initial begin
         for (i = 0; i < `ROMNum; i = i + 1) begin
@@ -32,16 +33,18 @@ module inst_rom (
         $readmemh ( "inst_rom.mem", roms);
     end
 
+    // Write (usually not used)
     always @(posedge i_Clk) begin
         if (i_we == `WriteEnable) begin
             roms[i_w_addr[31:2]] <= i_w_data;
         end
     end
 
-    always @ (posedge i_Clk) begin
+    // Read
+    always @ (posedge i_Clk or posedge i_reset) begin
         if (i_reset == `ResetEnable) begin
-            o_r_data = `ZeroWord;
-            o_r_addr = `ZeroWord;
+            o_r_data <= `ZeroWord;
+            o_r_addr <= `ZeroWord;
         end
         else begin
             /*  no address will start at 0x1, 0x2, 0xB...
@@ -49,8 +52,8 @@ module inst_rom (
                 so we have i_r_addr[31:2] that only capture
                 0x0, 0x4, 0x8, 0xC, 0x10...
             */
-            o_r_data = roms[i_r_addr[31:2]]; 
-            o_r_addr = i_r_addr;
+            o_r_data <= roms[i_r_addr[31:2]]; 
+            o_r_addr <= i_r_addr;
         end
     end    
 endmodule

@@ -67,6 +67,18 @@
 `define RAMDataBus              31:0
 `define RAMNum                  4096
 
+`define mem_len_word            2'b00
+`define mem_len_half            2'b01
+`define mem_len_byte            2'b10
+
+`define mem_half_index_0        1'b0
+`define mem_half_index_1        1'b1
+
+`define mem_byte_index_0        2'b00
+`define mem_byte_index_1        2'b01
+`define mem_byte_index_2        2'b10
+`define mem_byte_index_3        2'b11
+
 // id   
 `define ImmDataBus              31:0
 

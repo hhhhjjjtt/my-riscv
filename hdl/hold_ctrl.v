@@ -23,12 +23,15 @@ module hold_ctrl (
 
     // o_hold_flag: {pc_hold, if_id_hold, id_ex_hold}
     always @(*) begin
-        if (i_reset == `ResetEnable) begin
-            o_hold_flag = `hold_flag_none;
-            o_jump_flag = `JumpDisable;
-            o_jump_addr = `ZeroWord;
-        end
-        else if (i_hold_type == `hold_type_none) begin
+        o_hold_flag = `hold_flag_none;
+        o_jump_flag = i_jump_flag;
+        o_jump_addr = i_jump_addr;
+        // if (i_reset == `ResetEnable) begin
+        //     o_hold_flag = `hold_flag_none;
+        //     o_jump_flag = `JumpDisable;
+        //     o_jump_addr = `ZeroWord;
+        // end
+        if (i_hold_type == `hold_type_none) begin
             o_hold_flag = `hold_flag_none;
             o_jump_flag = `JumpDisable;
             o_jump_addr = `ZeroWord;

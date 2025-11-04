@@ -32,24 +32,73 @@ module if_id (
         .o_r_data(w_inst_data_rom),
         .o_r_addr(w_pc_addr_rom)
         );
+    
+    reg[1:0] hold_flag;
 
     always @(posedge i_Clk or posedge i_reset) begin
         if (i_reset == `ResetEnable) begin
-            o_inst_data <= `ZeroWord;
-            o_pc_addr <= `ZeroWord;
-        end
-        else if (i_hold_flag == `IF_ID_flush) begin
-            o_inst_data <= `NOP;
-            o_pc_addr <= `Reg0Addr;
-        end
-        else if (i_hold_flag == `IF_ID_hold) begin
-            o_inst_data <= o_inst_data;
-            o_pc_addr <= o_pc_addr;
+            hold_flag <= 2'b0;
         end
         else begin
-            o_inst_data <= w_inst_data_rom;
-            o_pc_addr <= w_pc_addr_rom;
+            hold_flag <= i_hold_flag;
         end
     end
+
+    always @(*) begin
+        // if (i_reset == `ResetEnable) begin
+        //     o_inst_data = `ZeroWord;
+        //     o_pc_addr = `ZeroWord;
+        // end
+        if (hold_flag == `IF_ID_flush) begin
+            o_inst_data = `NOP;
+            o_pc_addr = `Reg0Addr;
+        end
+        else if (hold_flag == `IF_ID_hold) begin
+            o_inst_data = o_inst_data;
+            o_pc_addr = o_pc_addr;
+        end
+        else begin
+            o_inst_data = w_inst_data_rom;
+            o_pc_addr = w_pc_addr_rom;
+        end
+    end
+
+    // always @(posedge i_Clk or posedge i_reset) begin
+    //     if (i_reset == `ResetEnable) begin
+    //         o_inst_data <= `ZeroWord;
+    //         o_pc_addr <= `ZeroWord;
+    //     end
+    //     else if (i_hold_flag == `IF_ID_flush) begin
+    //         o_inst_data <= `NOP;
+    //         o_pc_addr <= `Reg0Addr;
+    //     end
+    //     else if (i_hold_flag == `IF_ID_hold) begin
+    //         o_inst_data <= o_inst_data;
+    //         o_pc_addr <= o_pc_addr;
+    //     end
+    //     else begin
+    //         o_inst_data <= w_inst_data_rom;
+    //         o_pc_addr <= w_pc_addr_rom;
+    //     end
+    // end
+
+    // always @(*) begin
+    //     if (i_reset == `ResetEnable) begin
+    //         o_inst_data = `ZeroWord;
+    //         o_pc_addr = `ZeroWord;
+    //     end
+    //     else if (i_hold_flag == `IF_ID_flush) begin
+    //         o_inst_data = `NOP;
+    //         o_pc_addr = `Reg0Addr;
+    //     end
+    //     else if (i_hold_flag == `IF_ID_hold) begin
+    //         o_inst_data = o_inst_data;
+    //         o_pc_addr = o_pc_addr;
+    //     end
+    //     else begin
+    //         o_inst_data = w_inst_data_rom;
+    //         o_pc_addr = w_pc_addr_rom;
+    //     end
+    // end
 
 endmodule
