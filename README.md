@@ -6,20 +6,20 @@
 
 `my-riscv` draws heavily from the following resources:
 
-- `tinyriscv`: https://github.com/liangkangnan/tinyriscv
+- `tinyriscv`: https://github.com/liangkangnan/tinyriscv.
     - `my-riscv`'s core design logic is based on the 3-stage pipeline structure of `tinyriscv`. that is targeted on simplicity, focusing solely on the CPU core. The instruction ROM and data RAM fetch processes have been simplified, and peripherals such as UART, SPI, and JTAG are excluded.
     - Removed interconnect bus and the total pipeline stall comes with fetching from instruction rom and data ram over interconnect bus. 
     - Instruction rom and data ram is tightly coupled with the pipeline.
 
-- `picorv32`: https://github.com/YosysHQ/picorv32
+- `picorv32`: https://github.com/YosysHQ/picorv32.
     - RISC-V have its own official tests: https://github.com/riscv-software-src/riscv-tests. However, I personally found it to be a little hard to build.
     - In a blog about building RISC-V cpu: https://www.ustcpetergu.com/MyBlog/experience/2021/07/09/about-riscv-testing.html, I discovered this modified version of the official test under `picorv32`'s test cases.
     - Based on tests in `picorv32`, I made a more simplified version of tests and applied the automated tests to `my-riscv`.
 
-- `OPENMIPS`: from the book _write a CPU yourself_ https://github.com/yufeiran/OpenMIPS
-    - Referenced how other cpu's are made in verilog, act as a complement to `tinyriscv`
+- `OPENMIPS`: from the book _write a CPU yourself_ https://github.com/yufeiran/OpenMIPS.
+    - Referenced how other cpu's are made in verilog, act as a complement to `tinyriscv`.
 
-- `NJUCS 2023 Digital Logic and Computer Organization` Course Project: https://nju-projectn.github.io/dlco-lecture-note/exp/11.html
+- `NJUCS 2023 Digital Logic and Computer Organization` Course Project: https://nju-projectn.github.io/dlco-lecture-note/exp/11.html.
     - Provided decent amount of information about building a single-cycle rv32i cpu, especially setting up automated tests in systemverilog.
 
 ## Overview
@@ -29,7 +29,7 @@
 
 An overview of the hdl sources is as follows:
 
-`my_riscv_top.v`: The top module of `my-riscv`
+`my_riscv_top.v`: The top module of `my-riscv`.
 
 `defines.v`: Defines Macros like buses, opcodes, funct3/7, the 16‑bit control encoding, etc.
 
@@ -54,8 +54,8 @@ An overview of the hdl sources is as follows:
 `id_ex.v`: Pipeline latch between **id** and **ex**. Flush and hold behavior is controlled by `hold_ctrl.v`. 
 - Sequential logic
 
-`ex.v`: handles the ALU; branch target/decision; data‑width packing/unpacking for loads/stores; extra load/WB two‑beat register; hazard control
-- Mainly combinational logic, but with a sequential logic load register that stores the load instruction (destination register address/write enable/write width/write source) during load operation
+`ex.v`: handles the ALU; branch target/decision; data‑width packing/unpacking for loads/stores; extra load/WB two‑beat register; hazard control.
+- Mainly combinational logic, but with a sequential logic load register that stores the load instruction (destination register address/write enable/write width/write source) during load operation.
 
 `hold_ctrl.v`: translates EX’s general hold flag `{load_en, branch_en}` into the specific hold/flush flags for each stage.
 - Combinational logic
@@ -70,9 +70,9 @@ Follow the instruction in The xPack GNU RISC-V Embedded GCC: https://github.com/
 I personally used the global install mentioned in project website's Installation instruction page.
 
 ### Ubuntu setup
-You can choose to build the toolchain yourself following the official instruction https://github.com/riscv-collab/riscv-gnu-toolchain
+You can choose to build the toolchain yourself following the official instruction https://github.com/riscv-collab/riscv-gnu-toolchain.
 
-Or, to use a prebuit toolchain: https://github.com/stnolting/riscv-gcc-prebuilt
+Or, to use a prebuit toolchain: https://github.com/stnolting/riscv-gcc-prebuilt.
 
 #### To setup the prebuilt toolchain in `Prebuilt RISC-V GCC Toolchains for Linux`:
 
@@ -122,7 +122,18 @@ In Vivado:
 1. Add all .v files ulder `/hdl` to your Design Sources.
 2. Compile the test cases, then add all `.mem` files under `/test/mem/inst_rom` and `/test/mem/data_ram` to your Design Sources.
 3. Add `tb_my_riscv_03.sv` to your Simulation Sources.
-4. Click "Run Simulation" -> "Run Behavioral Simulation"
+4. Click "Run Simulation" -> "Run Behavioral Simulation".
+
+## Quick Tests
+
+Besides using Automated tests, you can also write your own tests in as `.s`, put inside `/compile`, then run:
+
+```
+make
+```
+And paste your compiled hex machine codes into `inst_rom.mem` in `/hdl`. 
+
+**Make sure to add `inst_rom.mem` in your design sources in vivdao.**
 
 ## Data Hazard Handeling
 
