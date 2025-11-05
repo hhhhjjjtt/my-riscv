@@ -1,6 +1,6 @@
 # my-riscv
 
-**Experimental Project.** This repository documents my personal exploration into RISC-V processor design. Not intended for formal educational use, but you can use this as a reference of how a beginner tried to learn riscv cpu.
+**Experimental Project.** This repository documents my personal exploration into RISC-V processor design. Not intended for formal educational use, but you can use this as a reference of how a beginner attempts to learn building a RISC-V cpu.
 
 ## References, Credits and Inspirations
 
@@ -8,28 +8,38 @@
 
 - `tinyriscv`: https://github.com/liangkangnan/tinyriscv
     - `my-riscv`'s core design logic is based on the 3-stage pipeline structure of `tinyriscv`. that is targeted on simplicity, focusing solely on the CPU core. The instruction ROM and data RAM fetch processes have been simplified, and peripherals such as UART, SPI, and JTAG are excluded.
-    - removed interconnect bus and the total pipeline stall comes with fetching from rom and ram over interconnect bus. Instead, rom and ram is tightly coupled with the pipeline.
+    - Removed interconnect bus and the total pipeline stall comes with fetching from instruction rom and data ram over interconnect bus. 
+    - Instruction rom and data ram is tightly coupled with the pipeline.
+
+- `picorv32`: https://github.com/YosysHQ/picorv32
+    - RISC-V have its own official tests: https://github.com/riscv-software-src/riscv-tests. However, I personally found it to be a little hard to build.
+    - In a blog about building RISC-V cpu: https://www.ustcpetergu.com/MyBlog/experience/2021/07/09/about-riscv-testing.html, I discovered this modified version of the official test under `picorv32`'s test cases.
+    - Based on tests in `picorv32`, I made a more simplified version of tests and applied the automated tests to `my-riscv`.
 
 - `OPENMIPS`: from the book _write a CPU yourself_ https://github.com/yufeiran/OpenMIPS
     - Referenced how other cpu's are made in verilog, act as a complement to `tinyriscv`
 
 - `NJUCS 2023 Digital Logic and Computer Organization` Course Project: https://nju-projectn.github.io/dlco-lecture-note/exp/11.html
-    - Provided decent amount of information about building a single-cycle rv32i cpu
+    - Provided decent amount of information about building a single-cycle rv32i cpu, especially setting up automated tests in systemverilog.
 
 ## Overview
 
-`my-riscv` is a simple in-order, 3-stage pipelined RISC-V CPU implementing the RV32I instruction set architecture (ISA).
+`my-riscv` is a simple single-core, single-issue, in-order, 3-stage pipelined RISC-V CPU implementing the RV32I instruction set architecture (ISA).
 ![Alt text](img/pipeline.png)
+
+An overview of the hdl sources is as follows:
+
+`my_riscv_top.v`: The top module of `my-riscv`
 
 `defines.v`: Defines Macros like buses, opcodes, funct3/7, the 16‑bit control encoding, etc.
 
-`pc.v`: PC pointer. Have three behaviors: jump, hold, or +4.
+`pc.v`: PC pointer register. Have three behaviors: jump, hold, or PC+4.
 - Sequential logic
 
-`inst_rom.v`: Instruction rom. Able to do syncronous read and write; memories with addr[31:2] drop (enforces word alignment).
+`inst_rom.v`: Instruction rom, maps to address `0x0000` to `0x3999`. Able to do syncronous read and write; memories with addr[31:2] drop (enforces word alignment).
 - Sequential logic
 
-`data_ram.v`: Data ram. Able to do syncronous read and write; memories with addr[31:2] drop (enforces word alignment).
+`data_ram.v`: Data ram, maps to address `0x4000` to `0x7999`. Able to do syncronous read and write; memories with addr[31:2] drop (enforces word alignment).
 - Sequential logic
 
 `regs.v`: 32×32 regfile, synchronous write, combinational reads with simple WB‑bypass.
@@ -95,22 +105,26 @@ Then scroll to bottom to this shell's startup files, and add a new line there:
 # Add RISC-V toolchain to PATH
 export PATH=$PATH:/opt/riscv/bin
 ```
-## Compile (temp)
-To Compile a rv32i assembly, paste your code inside `/compile/inst_rom.s`
+## Compile Tests
 
-Then run 
+Under `/test`, run:
 
 ```
 make
 ```
 
-And copy the hex code to `/hdl/inst_rom.mem`
+And the test source codes will be compiled into hex code in `.mem` files under `/test/mem/inst_rom` and `/test/mem/data_ram`.
 
 ## Automated Tests
 
-🏗️ under work...
+In Vivado:
 
-## Data Hazard Handleing
+1. Add all .v files ulder `/hdl` to your Design Sources.
+2. Compile the test cases, then add all `.mem` files under `/test/mem/inst_rom` and `/test/mem/data_ram` to your Design Sources.
+3. Add `tb_my_riscv_03.sv` to your Simulation Sources.
+4. Click "Run Simulation" -> "Run Behavioral Simulation"
+
+## Data Hazard Handeling
 
 - **Control (branch/jump)**: resolved in EX
     - When a branch or jump is taken in EX, `ex.v` sends a branch signal to `hold_ctrl.v`. 
@@ -125,9 +139,5 @@ And copy the hex code to `/hdl/inst_rom.mem`
     - If a read address equals the write address while we is asserted, **the read returns the pending write data**.
 
 ## To Do
-- Finish documentation
-- More test automation
 - Revise comments
-
-
-
+- FPGA
